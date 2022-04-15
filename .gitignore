@@ -1,0 +1,8 @@
+img
+jsis_datasets
+MZ_Figs
+SZ_Figs
+old_weights
+.idea
+data/dataset_jsis_ladle_wall_metalzone_cut_prep_20220329_105019.pkl
+*.pkl
