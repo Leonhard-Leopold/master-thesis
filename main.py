@@ -25,8 +25,10 @@ get_model = final_model_ms_sl_dataset  # which models to use.
 random_state = 1  # Choose a number to recreate the split of training, validation test sets or set it to None.
 #                   This is not used when using leave one out cross validaiton
 
-use_all_datasets = True  # Execute the selected function for all selected datasets
-selected_dataset = 'mzsl'  # which dataset to use (if use_all_datasets = True)
+use_all_datasets = False  # Execute the selected function for all selected datasets
+selected_single_dataset = 'Metalzone'  # If use_all_datasets is False, a single data set is used.
+#                            Choose one of 'Metalzone', 'Slagzone', 'Bottom Inlet', 'Bottom Outlet', 'Heart'
+selected_dataset = 'mzsl'  # If use_all_datasets is True, all of a certain set are used.
 #                            selected_dataset = 'mzsl' --> Metalzone, Slagzone
 #                            selected_dataset = 'voest' --> Bottom Inlet, Bottom Outlet, Heart
 #                            selected_dataset = 'all' --> Metalzone, Slagzone, Bottom Inlet, Bottom Outlet, Heart
@@ -481,7 +483,8 @@ def train_model(data_sets, epochs, model_number, load="no"):
     if data_aug_shuffle:
         xx, yy, ol_train_aug = shuffle_data_augmentation(X_train, yy, lengths=ol_train)
         if gauss_filter:
-            X_train = apply_gauss_filter(xx)
+            xx = apply_gauss_filter(xx)
+            xx = np.array([x[0].reshape(x[0].shape + (1,)) for x in xx])
     else:
         xx, yy, ol_train_aug = X_train, yy, ol_train
 
@@ -664,22 +667,23 @@ if __name__ == '__main__':
         epochs = input("Enter the number of epochs to train (default = 250):\n").strip().strip("'").strip('"')
         epochs = 250 if not epochs.isnumeric() else int(epochs)
 
-    if selected_dataset == "voest" or combine_datasets:
-        file_paths = ['data/HeartInData_07_2022.pkl', 'data/HeartOutData_07_2022.pkl', 'data/HeartData_07_2022.pkl']
-        file_titles = ['Bottom Inlet', 'Bottom Outlet', 'Heart']
-    elif selected_dataset == "mzsl":
-        file_paths = ['data/dataset_jsis_ladle_wall_metalzone_cut_prep_20220329_105019.pkl',
-                      'data/dataset_jsis_ladle_wall_slagzone_prep_20220329_104634.pkl']
-        file_titles = ['Metalzone', 'Slagzone']
-    else:
-        file_paths = ['data/dataset_jsis_ladle_wall_metalzone_cut_prep_20220329_105019.pkl',
+    file_paths = ['data/dataset_jsis_ladle_wall_metalzone_cut_prep_20220329_105019.pkl',
                       'data/dataset_jsis_ladle_wall_slagzone_prep_20220329_104634.pkl',
                       'data/HeartInData_07_2022.pkl', 'data/HeartOutData_07_2022.pkl', 'data/HeartData_07_2022.pkl']
-        file_titles = ['Metalzone', 'Slagzone', 'Bottom Inlet', 'Bottom Outlet', 'Heart']
+    file_titles = ['Metalzone', 'Slagzone', 'Bottom Inlet', 'Bottom Outlet', 'Heart']
+
+    if use_all_datasets:
+        if selected_dataset == "voest" or combine_datasets:
+            file_paths = ['data/HeartInData_07_2022.pkl', 'data/HeartOutData_07_2022.pkl', 'data/HeartData_07_2022.pkl']
+            file_titles = ['Bottom Inlet', 'Bottom Outlet', 'Heart']
+        elif selected_dataset == "mzsl":
+            file_paths = ['data/dataset_jsis_ladle_wall_metalzone_cut_prep_20220329_105019.pkl',
+                          'data/dataset_jsis_ladle_wall_slagzone_prep_20220329_104634.pkl']
+            file_titles = ['Metalzone', 'Slagzone']
 
     iterations = len(file_paths) if use_all_datasets and not combine_datasets else 1
-    file_paths = file_paths if use_all_datasets else [
-        'data/dataset_jsis_ladle_wall_slagzone_prep_20220329_104634.pkl']
+    file_paths = file_paths if use_all_datasets else [file_paths[file_titles.index(selected_single_dataset)]]
+    file_titles = file_titles if use_all_datasets else [file_titles[file_titles.index(selected_single_dataset)]]
 
     # when comparing models, write the results to an excel file
     if model_number in ["c", "C"] and train in ["t", "train"] and use_all_datasets:
