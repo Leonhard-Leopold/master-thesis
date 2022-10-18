@@ -16,7 +16,6 @@ from sklearn.metrics import accuracy_score
 from sklearn.metrics import confusion_matrix, ConfusionMatrixDisplay
 from datetime import datetime
 from csv import writer
-from tensorflow.keras.utils import plot_model
 
 # HYPERPARAMETERS
 
@@ -34,7 +33,7 @@ selected_dataset = 'mzsl'  # If use_all_datasets is True, all of a certain set a
 #                            selected_dataset = 'all' --> Metalzone, Slagzone, Bottom Inlet, Bottom Outlet, Heart
 
 cross_validation = True  # should cross validation be done or should only one model be trained
-num_fold_cv_init = 5  # number folds in the cross validation. 'leave_one_out' enabled leave-one-out-CV
+num_fold_cv_init = 'leave_one_out'  # number folds in the cross validation. 'leave_one_out' enabled leave-one-out-CV
 zero_padding = True  # if this is false, the last value is repeated util every campaign is the same length
 
 normalize_campaign_size = False  # should the targets be divided by the length of the corresponding campaign
@@ -58,7 +57,6 @@ use_columns = 5  # which features are used. Use 'all', 'best' for pre-selected o
 #                  or a numeric value to use the features with the highest shap-values
 
 plot_shap_differences = False  # iterate over a range (2-25) of the selected number of features to compare the results
-plot_model_architecture = True  # print model.summary()
 
 # initialization of some variables
 colors = ['b', 'g', 'r', 'c', 'm', 'y', 'k']
@@ -710,10 +708,6 @@ if __name__ == '__main__':
             writer_object = writer(f_object)
             writer_object.writerow(cols)
             f_object.close()
-
-        if plot_model_architecture:
-            m, _, _ = get_model(model_number if model_number not in ['c', 'C'] else 1, max_heats, num_feats)
-            plot_model(m, to_file='model.png', show_shapes=True, show_layer_names=False, show_layer_activations=True)
 
         if num_fold_cv_init == 'leave_one_out':
             num_fold_cv = len(d)
